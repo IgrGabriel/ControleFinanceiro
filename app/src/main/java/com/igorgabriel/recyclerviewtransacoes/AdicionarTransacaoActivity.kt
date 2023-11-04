@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.igorgabriel.recyclerviewtransacoes.databinding.ActivityAdicionarTransacaoBinding
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class AdicionarTransacaoActivity : AppCompatActivity() {
 
@@ -29,7 +30,38 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        // TO DO: data iniciar com o dia atual
+        setupDatePicker()
+        setupAddTransacao()
+    }
+
+    private fun setupAddTransacao() {
+        binding.btnAdicionarTransacao.setOnClickListener {
+            val descricao = binding.editAddDescricao.text.toString().trim()
+            val categoria = binding.editAddCategoria.text.toString().trim()
+            val valor = binding.editAddValor.text.toString().trim()
+            val checkedId = binding.radioTipo.checkedRadioButtonId
+            if (checkedId == -1) {
+                exibirMensagem("Selecione um tipo")
+                return@setOnClickListener
+            }
+            val tipo = findViewById<RadioButton>(checkedId).text.toString()
+
+            try {
+                val dataString = converterDataParaFormatoNumerico(binding.textData.text.toString())
+                val data = converterStingParaData(dataString)
+
+                if (descricao.isNotEmpty() && categoria.isNotEmpty() && valor.isNotEmpty()) {
+                    adicionarTransacao(descricao, categoria, valor, tipo, data)
+                } else {
+                    exibirMensagem("Preencha todos os campos")
+                }
+            } catch (e: Exception) {
+                exibirMensagem("Ocorreu um erro ao converter a data")
+            }
+        }
+    }
+
+    private fun setupDatePicker() {
         binding.ivMostrarCalendario.setOnClickListener {
             val calendario = Calendar.getInstance()
             val ano = calendario.get(Calendar.YEAR)
@@ -42,7 +74,9 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
                     val dataSelecionada = Calendar.getInstance()
                     dataSelecionada.set(anoSelecionado, mesSelecionado, diaSelecionado)
 
-                    binding.textData.text = SimpleDateFormat("EEE, dd MMM yyyy").format(dataSelecionada.time)
+                    val formattedDate = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(dataSelecionada.time)
+
+                    binding.textData.text = formattedDate
                 },
                 ano,
                 mes,
@@ -50,33 +84,44 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
             )
             datePickerDialog.show()
         }
-
-        binding.radioTipo.setOnCheckedChangeListener { group, checkedId ->
-            if(checkedId != -1){
-                val opcaoSelecionada = findViewById<RadioButton>(checkedId)
-
-                binding.btnAdicionarTransacao.setOnClickListener {
-                    val descricao = binding.editAddDescricao.text.toString()
-                    val categoria = binding.editAddCategoria.text.toString()
-                    val valor = binding.editAddValor.text.toString()
-                    var tipo = opcaoSelecionada.text.toString()
-                    val data = binding.textData.text.toString()
-
-                    if (!data.equals("Escolha uma data")){
-                        adicionarTransacao(descricao, categoria, valor, tipo, data)
-                    }
-                }
-            }
-
-        }
     }
+
+    private fun converterStingParaData(data: String): Data {
+        val partes = data.split(" ")
+        val dia = partes[0].toInt()
+        val mes = partes[1].toInt()
+        val ano = partes[2].toInt()
+
+        return Data(dia, mes, ano)
+    }
+
+    fun converterDataParaFormatoNumerico(data: String): String {
+        val meses = listOf(
+            "jan", "fev", "mar", "abr", "mai", "jun",
+            "jul", "ago", "set", "out", "nov", "dez"
+        )
+
+        val partes = data.split(" ")
+        val dia = partes[1].removeSuffix(".")
+        val mes = (
+                meses.indexOf( // retorna o indice da primeria ocorrencia
+                    partes[2]
+                        .lowercase(Locale.ROOT)
+                        .removeSuffix(".")) + 1
+                ).toString()
+                .padStart(2, '0') //  garante que essa string tenha pelo menos 2 caracteres, preenchendo com 0 à esquerda se necessário
+        val ano = partes[3]
+
+        return "$dia $mes $ano"
+    }
+
 
     private fun adicionarTransacao(
         descricao: String,
         categoria: String,
         valor: String,
         tipo: String,
-        data: String
+        data: Data
     ) {
         val idUsuarioLogado = autenticacao.currentUser?.uid
         if (idUsuarioLogado != null) {
