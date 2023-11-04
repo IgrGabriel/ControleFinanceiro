@@ -3,6 +3,7 @@ package com.igorgabriel.recyclerviewtransacoes
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +20,7 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
 
     private lateinit var transacaoAdapter: TransacoesAdapter
 
-    private val binding by lazy{
+    private val binding by lazy {
         ActivityHistoricoTransacoesBinding.inflate(layoutInflater)
     }
 
@@ -58,6 +59,7 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
 
         binding.rvLista.adapter = transacaoAdapter
         binding.rvLista.layoutManager = LinearLayoutManager(this)
+
     }
 
     private fun setupListeners() {
@@ -89,9 +91,10 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
 
     private fun excluirTransacao() {
         // Remover transacoes arrastando para os lados
-        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0,
+        val swipeHandler = object : ItemTouchHelper.SimpleCallback(
+            0,
             ItemTouchHelper.START or ItemTouchHelper.END
-        ){
+        ) {
             // Comportamentos de arratar na tela
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -102,7 +105,7 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                transacaoAdapter.removeAt(viewHolder.adapterPosition)
+                alertDialogExclusao(transacaoAdapter, viewHolder.adapterPosition)
             }
 
         }
@@ -111,26 +114,42 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
         itemTouchHelper.attachToRecyclerView(binding.rvLista)
     }
 
+    private fun alertDialogExclusao(transacoesAdapter: TransacoesAdapter, position: Int) {
+        AlertDialog.Builder(this)
+            .setTitle("Remover transação")
+            .setMessage("Tem certeza que deseja excluir essa transação?")
+            .setNegativeButton("CANCELAR") { dialog, posicao ->
+                transacoesAdapter.notifyItemChanged(position)
+            }
+            .setPositiveButton("REMOVER") { dialog, posicao ->
+                transacaoAdapter.removeAt(position)
+            }
+            .setCancelable(false) // obriga o usuario a escolher uma opção
+            .setIcon(R.drawable.alert_icon)
+            .create()
+            .show()
+    }
+
     private fun listarTransacoes() {
         val idUsuarioLogado = autenticacao.currentUser?.uid
-        if(idUsuarioLogado != null){
+        if (idUsuarioLogado != null) {
             val referenciaUsuario = bancoDados
                 .collection("usuarios/${idUsuarioLogado}/transacoes")
-                // Ordena por data mais recente
-                /*.orderBy("data.dia", Query.Direction.DESCENDING)
-                .orderBy("data.mes", Query.Direction.DESCENDING)
-                .orderBy("data.ano", Query.Direction.DESCENDING)*/
+            // Ordena por data mais recente
+            /*.orderBy("data.dia", Query.Direction.DESCENDING)
+            .orderBy("data.mes", Query.Direction.DESCENDING)
+            .orderBy("data.ano", Query.Direction.DESCENDING)*/
 
-                //.whereEqualTo("data.mes", 10)
-                //.whereEqualTo("data.ano", 2023)
+            //.whereEqualTo("data.mes", 10)
+            //.whereEqualTo("data.ano", 2023)
 
             referenciaUsuario.addSnapshotListener { querySnapshot, error ->
                 val listaDocuments = querySnapshot?.documents
                 val lista_transacoes = mutableListOf<Transacao>()
 
-                listaDocuments?.forEach{documentSnapshot ->
+                listaDocuments?.forEach { documentSnapshot ->
                     val dados = documentSnapshot?.data
-                    if(dados != null){
+                    if (dados != null) {
                         val documentId = documentSnapshot.id
                         val descricao = dados["descricao"].toString()
                         val categoria = dados["categoria"].toString()
@@ -140,19 +159,31 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
                         try {
                             val dataMap = dados["data"] as Map<String, Number>
 
-                            val dia = dataMap["dia"]?.toInt() ?: 1 // Use 1 como valor padrão se dia não estiver presente
+                            val dia = dataMap["dia"]?.toInt()
+                                ?: 1 // Use 1 como valor padrão se dia não estiver presente
                             val mes = dataMap["mes"]?.toInt() ?: 0 // Usa 0 como padrão (janeiro)
-                            val ano = dataMap["ano"]?.toInt() ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
+                            val ano = dataMap["ano"]?.toInt()
+                                ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
 
                             val calendario = Calendar.getInstance()
                             calendario.set(ano, mes - 1, dia) // O mês base é 0, então subtrai 1
 
-                            val data = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(calendario.time)
+                            val data =
+                                SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(
+                                    calendario.time
+                                )
 
-                            lista_transacoes.add(0, Transacao(documentId, descricao, categoria, valor, tipo, data))
+                            lista_transacoes.add(
+                                0,
+                                Transacao(documentId, descricao, categoria, valor, tipo, data)
+                            )
                             transacaoAdapter.atualizarListaDados(lista_transacoes)
                         } catch (e: Exception) {
-                            Toast.makeText(this, "Erro ao carregar transação: $e", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "Erro ao carregar transação: $e",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
                     }
@@ -163,7 +194,7 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
 
     private fun filtrarMesAtual() {
         val idUsuarioLogado = autenticacao.currentUser?.uid
-        if(idUsuarioLogado != null){
+        if (idUsuarioLogado != null) {
 
             val calendar = Calendar.getInstance()
             val ano = calendar.get(Calendar.YEAR)
@@ -178,9 +209,9 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
                 val listaDocuments = querySnapshot?.documents
                 val lista_transacoes = mutableListOf<Transacao>()
 
-                listaDocuments?.forEach{documentSnapshot ->
+                listaDocuments?.forEach { documentSnapshot ->
                     val dados = documentSnapshot?.data
-                    if(dados != null){
+                    if (dados != null) {
                         val documentId = documentSnapshot.id
                         val descricao = dados["descricao"].toString()
                         val categoria = dados["categoria"].toString()
@@ -190,19 +221,31 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
                         try {
                             val dataMap = dados["data"] as Map<String, Number>
 
-                            val dia = dataMap["dia"]?.toInt() ?: 1 // Use 1 como valor padrão se dia não estiver presente
+                            val dia = dataMap["dia"]?.toInt()
+                                ?: 1 // Use 1 como valor padrão se dia não estiver presente
                             val mes = dataMap["mes"]?.toInt() ?: 0 // Usa 0 como padrão (janeiro)
-                            val ano = dataMap["ano"]?.toInt() ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
+                            val ano = dataMap["ano"]?.toInt()
+                                ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
 
                             val calendario = Calendar.getInstance()
                             calendario.set(ano, mes - 1, dia) // O mês base é 0, então subtrai 1
 
-                            val data = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(calendario.time)
+                            val data =
+                                SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(
+                                    calendario.time
+                                )
 
-                            lista_transacoes.add(0, Transacao(documentId, descricao, categoria, valor, tipo, data))
+                            lista_transacoes.add(
+                                0,
+                                Transacao(documentId, descricao, categoria, valor, tipo, data)
+                            )
                             transacaoAdapter.atualizarListaDados(lista_transacoes)
                         } catch (e: Exception) {
-                            Toast.makeText(this, "Erro ao carregar transação: $e", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "Erro ao carregar transação: $e",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
                     }
@@ -213,7 +256,7 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
 
     private fun filtrarPorTipo(tipo: String) {
         val idUsuarioLogado = autenticacao.currentUser?.uid
-        if(idUsuarioLogado != null){
+        if (idUsuarioLogado != null) {
             val referenciaUsuario = bancoDados
                 .collection("usuarios/${idUsuarioLogado}/transacoes")
                 .whereEqualTo("tipo", tipo)
@@ -222,9 +265,9 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
                 val listaDocuments = querySnapshot?.documents
                 val lista_transacoes = mutableListOf<Transacao>()
 
-                listaDocuments?.forEach{documentSnapshot ->
+                listaDocuments?.forEach { documentSnapshot ->
                     val dados = documentSnapshot?.data
-                    if(dados != null){
+                    if (dados != null) {
                         val documentId = documentSnapshot.id
                         val descricao = dados["descricao"].toString()
                         val categoria = dados["categoria"].toString()
@@ -234,19 +277,31 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
                         try {
                             val dataMap = dados["data"] as Map<String, Number>
 
-                            val dia = dataMap["dia"]?.toInt() ?: 1 // Use 1 como valor padrão se dia não estiver presente
+                            val dia = dataMap["dia"]?.toInt()
+                                ?: 1 // Use 1 como valor padrão se dia não estiver presente
                             val mes = dataMap["mes"]?.toInt() ?: 0 // Usa 0 como padrão (janeiro)
-                            val ano = dataMap["ano"]?.toInt() ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
+                            val ano = dataMap["ano"]?.toInt()
+                                ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
 
                             val calendario = Calendar.getInstance()
                             calendario.set(ano, mes - 1, dia) // O mês base é 0, então subtrai 1
 
-                            val data = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(calendario.time)
+                            val data =
+                                SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(
+                                    calendario.time
+                                )
 
-                            lista_transacoes.add(0, Transacao(documentId, descricao, categoria, valor, tipo, data))
+                            lista_transacoes.add(
+                                0,
+                                Transacao(documentId, descricao, categoria, valor, tipo, data)
+                            )
                             transacaoAdapter.atualizarListaDados(lista_transacoes)
                         } catch (e: Exception) {
-                            Toast.makeText(this, "Erro ao carregar transação: $e", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "Erro ao carregar transação: $e",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
                     }
