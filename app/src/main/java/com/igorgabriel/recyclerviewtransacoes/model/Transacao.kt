@@ -1,4 +1,4 @@
-package com.igorgabriel.recyclerviewtransacoes
+package com.igorgabriel.recyclerviewtransacoes.model
 
 data class Transacao(
     val id: String,

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.igorgabriel.recyclerviewtransacoes.model.Transacao
 
 private val autenticacao by lazy {
     FirebaseAuth.getInstance()
@@ -30,11 +31,6 @@ class TransacoesAdapter(
         notifyDataSetChanged()
     }
 
-    /*fun adicionar(descricao: String, categoria: String, valor: String){
-        listaTransacoes.add(0, Transacao(descricao, categoria, valor))
-        notifyItemInserted(0)
-    }*/
-
     inner class TransacoesViewHolder(
         val itemView : View
     ): ViewHolder( itemView ){
@@ -46,7 +42,7 @@ class TransacoesAdapter(
 
         val cardView: CardView = itemView.findViewById( R.id.card_view_layout )
 
-        fun bind( transacao: Transacao ){
+        fun bind( transacao: Transacao){
             textDescricao.text = transacao.descricao
             textCategoria.text = transacao.categoria
             textValor.text = transacao.valor
