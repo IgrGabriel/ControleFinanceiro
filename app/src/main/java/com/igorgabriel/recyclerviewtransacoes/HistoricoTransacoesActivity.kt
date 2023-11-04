@@ -1,0 +1,257 @@
+package com.igorgabriel.recyclerviewtransacoes
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.igorgabriel.recyclerviewtransacoes.databinding.ActivityHistoricoTransacoesBinding
+import com.igorgabriel.recyclerviewtransacoes.model.Transacao
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+
+class HistoricoTransacoesActivity : AppCompatActivity() {
+
+    private lateinit var transacaoAdapter: TransacoesAdapter
+
+    private val binding by lazy{
+        ActivityHistoricoTransacoesBinding.inflate(layoutInflater)
+    }
+
+    private val autenticacao by lazy {
+        FirebaseAuth.getInstance()
+    }
+
+    private val bancoDados by lazy {
+        FirebaseFirestore.getInstance()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(binding.root)
+
+        listarTransacoes()
+        setupUI()
+        setupListeners()
+        excluirTransacao()
+
+    }
+
+    private fun setupUI() {
+        transacaoAdapter = TransacoesAdapter { id, descricao, categoria, valor, tipo, data ->
+            val intent = Intent(this, EditarTransacoesActivity::class.java)
+
+            intent.putExtra("id", id)
+            intent.putExtra("descricao", descricao)
+            intent.putExtra("categoria", categoria)
+            intent.putExtra("valor", valor)
+            intent.putExtra("tipo", tipo)
+            intent.putExtra("data", data)
+
+            startActivity(intent)
+        }
+
+        binding.rvLista.adapter = transacaoAdapter
+        binding.rvLista.layoutManager = LinearLayoutManager(this)
+    }
+
+    private fun setupListeners() {
+        binding.btnAdicionar.setOnClickListener {
+            startActivity(Intent(this, AdicionarTransacaoActivity::class.java))
+        }
+
+        binding.btnLogout.setOnClickListener {
+            autenticacao.signOut()
+            finish()
+        }
+
+        binding.btnPrincipal.setOnClickListener {
+            startActivity(Intent(this, TelaPrincipalActivity::class.java))
+        }
+
+        binding.btnFiltrarDespesas.setOnClickListener {
+            filtrarPorTipo("Despesa")
+        }
+
+        binding.btnFiltrarReceitas.setOnClickListener {
+            filtrarPorTipo("Receita")
+        }
+
+        binding.btnFiltrarData.setOnClickListener {
+            filtrarMesAtual()
+        }
+    }
+
+    private fun excluirTransacao() {
+        // Remover transacoes arrastando para os lados
+        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0,
+            ItemTouchHelper.START or ItemTouchHelper.END
+        ){
+            // Comportamentos de arratar na tela
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                transacaoAdapter.removeAt(viewHolder.adapterPosition)
+            }
+
+        }
+
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(binding.rvLista)
+    }
+
+    private fun listarTransacoes() {
+        val idUsuarioLogado = autenticacao.currentUser?.uid
+        if(idUsuarioLogado != null){
+            val referenciaUsuario = bancoDados
+                .collection("usuarios/${idUsuarioLogado}/transacoes")
+                // Ordena por data mais recente
+                /*.orderBy("data.dia", Query.Direction.DESCENDING)
+                .orderBy("data.mes", Query.Direction.DESCENDING)
+                .orderBy("data.ano", Query.Direction.DESCENDING)*/
+
+                //.whereEqualTo("data.mes", 10)
+                //.whereEqualTo("data.ano", 2023)
+
+            referenciaUsuario.addSnapshotListener { querySnapshot, error ->
+                val listaDocuments = querySnapshot?.documents
+                val lista_transacoes = mutableListOf<Transacao>()
+
+                listaDocuments?.forEach{documentSnapshot ->
+                    val dados = documentSnapshot?.data
+                    if(dados != null){
+                        val documentId = documentSnapshot.id
+                        val descricao = dados["descricao"].toString()
+                        val categoria = dados["categoria"].toString()
+                        val valor = dados["valor"].toString()
+                        val tipo = dados["tipo"].toString()
+
+                        try {
+                            val dataMap = dados["data"] as Map<String, Number>
+
+                            val dia = dataMap["dia"]?.toInt() ?: 1 // Use 1 como valor padrão se dia não estiver presente
+                            val mes = dataMap["mes"]?.toInt() ?: 0 // Usa 0 como padrão (janeiro)
+                            val ano = dataMap["ano"]?.toInt() ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
+
+                            val calendario = Calendar.getInstance()
+                            calendario.set(ano, mes - 1, dia) // O mês base é 0, então subtrai 1
+
+                            val data = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(calendario.time)
+
+                            lista_transacoes.add(0, Transacao(documentId, descricao, categoria, valor, tipo, data))
+                            transacaoAdapter.atualizarListaDados(lista_transacoes)
+                        } catch (e: Exception) {
+                            Toast.makeText(this, "Erro ao carregar transação: $e", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun filtrarMesAtual() {
+        val idUsuarioLogado = autenticacao.currentUser?.uid
+        if(idUsuarioLogado != null){
+
+            val calendar = Calendar.getInstance()
+            val ano = calendar.get(Calendar.YEAR)
+            val mes = calendar.get(Calendar.MONTH) + 1
+
+            val referenciaUsuario = bancoDados
+                .collection("usuarios/${idUsuarioLogado}/transacoes")
+                .whereEqualTo("data.mes", mes)
+                .whereEqualTo("data.ano", ano)
+
+            referenciaUsuario.addSnapshotListener { querySnapshot, error ->
+                val listaDocuments = querySnapshot?.documents
+                val lista_transacoes = mutableListOf<Transacao>()
+
+                listaDocuments?.forEach{documentSnapshot ->
+                    val dados = documentSnapshot?.data
+                    if(dados != null){
+                        val documentId = documentSnapshot.id
+                        val descricao = dados["descricao"].toString()
+                        val categoria = dados["categoria"].toString()
+                        val valor = dados["valor"].toString()
+                        val tipo = dados["tipo"].toString()
+
+                        try {
+                            val dataMap = dados["data"] as Map<String, Number>
+
+                            val dia = dataMap["dia"]?.toInt() ?: 1 // Use 1 como valor padrão se dia não estiver presente
+                            val mes = dataMap["mes"]?.toInt() ?: 0 // Usa 0 como padrão (janeiro)
+                            val ano = dataMap["ano"]?.toInt() ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
+
+                            val calendario = Calendar.getInstance()
+                            calendario.set(ano, mes - 1, dia) // O mês base é 0, então subtrai 1
+
+                            val data = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(calendario.time)
+
+                            lista_transacoes.add(0, Transacao(documentId, descricao, categoria, valor, tipo, data))
+                            transacaoAdapter.atualizarListaDados(lista_transacoes)
+                        } catch (e: Exception) {
+                            Toast.makeText(this, "Erro ao carregar transação: $e", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun filtrarPorTipo(tipo: String) {
+        val idUsuarioLogado = autenticacao.currentUser?.uid
+        if(idUsuarioLogado != null){
+            val referenciaUsuario = bancoDados
+                .collection("usuarios/${idUsuarioLogado}/transacoes")
+                .whereEqualTo("tipo", tipo)
+
+            referenciaUsuario.addSnapshotListener { querySnapshot, error ->
+                val listaDocuments = querySnapshot?.documents
+                val lista_transacoes = mutableListOf<Transacao>()
+
+                listaDocuments?.forEach{documentSnapshot ->
+                    val dados = documentSnapshot?.data
+                    if(dados != null){
+                        val documentId = documentSnapshot.id
+                        val descricao = dados["descricao"].toString()
+                        val categoria = dados["categoria"].toString()
+                        val valor = dados["valor"].toString()
+                        val tipo = dados["tipo"].toString()
+
+                        try {
+                            val dataMap = dados["data"] as Map<String, Number>
+
+                            val dia = dataMap["dia"]?.toInt() ?: 1 // Use 1 como valor padrão se dia não estiver presente
+                            val mes = dataMap["mes"]?.toInt() ?: 0 // Usa 0 como padrão (janeiro)
+                            val ano = dataMap["ano"]?.toInt() ?: 2023 // Use 2023 como ano padrão se ano não estiver presente
+
+                            val calendario = Calendar.getInstance()
+                            calendario.set(ano, mes - 1, dia) // O mês base é 0, então subtrai 1
+
+                            val data = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(calendario.time)
+
+                            lista_transacoes.add(0, Transacao(documentId, descricao, categoria, valor, tipo, data))
+                            transacaoAdapter.atualizarListaDados(lista_transacoes)
+                        } catch (e: Exception) {
+                            Toast.makeText(this, "Erro ao carregar transação: $e", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+}

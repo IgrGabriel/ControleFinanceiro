@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".HistoricoTransacoesActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_lista"
@@ -49,6 +49,36 @@
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="130dp"
             android:text="Tela principal"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="55dp">
+
+        <Button
+            android:id="@+id/btn_filtrar_receitas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="F receitas"/>
+
+        <Button
+            android:id="@+id/btn_filtrar_despesas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="F despesas"/>
+
+        <Button
+            android:id="@+id/btn_filtrar_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="130dp"
+            android:text="Trans desse mes"/>
     </RelativeLayout>
 
 </RelativeLayout>
