@@ -12,73 +12,70 @@
         android:layout_height="match_parent"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="65dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginBottom="120dp"
         tools:itemCount="10"
         tools:listitem="@layout/item_cardview_transacoes" />
 
-    <RelativeLayout
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="10dp">
+        android:layout_marginBottom="65dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_adicionar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="25dp"
+            android:layout_weight="1"
             android:text="Adicionar" />
 
         <Button
             android:id="@+id/btn_logout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="25dp"
+            android:layout_weight="1"
             android:text="Sair" />
 
         <Button
             android:id="@+id/btn_principal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="130dp"
-            android:text="Tela principal"/>
+            android:layout_weight="1"
+            android:text="Tela principal" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="55dp">
+        android:layout_below="@+id/buttonsLayout"
+        android:layout_marginTop="-65dp"
+        android:layout_marginBottom="80dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_filtrar_receitas"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:text="F receitas"/>
+            android:layout_weight="1"
+            android:text="Filtrar Receitas" />
 
         <Button
             android:id="@+id/btn_filtrar_despesas"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:text="F despesas"/>
+            android:layout_weight="1"
+            android:text="Filtrar Despesas" />
 
         <Button
             android:id="@+id/btn_filtrar_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="130dp"
-            android:text="Trans desse mes"/>
-    </RelativeLayout>
+            android:layout_weight="1"
+            android:text="Transações do Mês" />
+
+    </LinearLayout>
 
 </RelativeLayout>
