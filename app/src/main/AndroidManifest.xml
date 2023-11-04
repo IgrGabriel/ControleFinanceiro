@@ -22,10 +22,10 @@
             android:name=".CadastroActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".HistoricoTransacoesActivity"
             android:exported="false" />
         <activity
-            android:name=".Editar_Transacoes_Activity"
+            android:name=".EditarTransacoesActivity"
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
