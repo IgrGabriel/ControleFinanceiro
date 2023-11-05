@@ -6,30 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".HistoricoTransacoesActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_lista"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="120dp"
-        tools:itemCount="10"
-        tools:listitem="@layout/item_cardview_transacoes" />
-
     <LinearLayout
-        android:id="@+id/buttonsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="65dp"
+        android:layout_marginHorizontal="16dp"
         android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btn_adicionar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Adicionar" />
 
         <Button
             android:id="@+id/btn_logout"
@@ -38,6 +19,33 @@
             android:layout_weight="1"
             android:text="Sair" />
 
+        <Spinner
+            android:id="@+id/spinner_filtros"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_lista"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="48dp"
+        android:layout_marginBottom="100dp"
+        tools:itemCount="10"
+        tools:listitem="@layout/item_cardview_transacoes" />
+
+    <LinearLayout
+        android:id="@+id/buttonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"
+        android:layout_marginHorizontal="16dp"
+        android:orientation="horizontal">
+
         <Button
             android:id="@+id/btn_principal"
             android:layout_width="wrap_content"
@@ -45,36 +53,12 @@
             android:layout_weight="1"
             android:text="Tela principal" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/buttonsLayout"
-        android:layout_marginTop="-65dp"
-        android:layout_marginBottom="80dp"
-        android:orientation="horizontal">
-
         <Button
-            android:id="@+id/btn_filtrar_receitas"
+            android:id="@+id/btn_adicionar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Filtrar Receitas" />
-
-        <Button
-            android:id="@+id/btn_filtrar_despesas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Filtrar Despesas" />
-
-        <Button
-            android:id="@+id/btn_filtrar_data"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Transações do Mês" />
+            android:text="Adicionar" />
 
     </LinearLayout>
 
