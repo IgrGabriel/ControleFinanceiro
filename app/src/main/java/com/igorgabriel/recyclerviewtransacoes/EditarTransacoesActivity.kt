@@ -7,9 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.igorgabriel.recyclerviewtransacoes.databinding.ActivityEditarTransacoesBinding
+import com.igorgabriel.recyclerviewtransacoes.model.Data
+import com.igorgabriel.recyclerviewtransacoes.model.converterDataParaFormatoNumerico
+import com.igorgabriel.recyclerviewtransacoes.model.converterStingParaData
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Locale
 
 class EditarTransacoesActivity : AppCompatActivity() {
 
@@ -43,12 +45,13 @@ class EditarTransacoesActivity : AppCompatActivity() {
             binding.editCategoria.setText(categoria)
             binding.editValor.setText(valor)
             binding.editData.setText(data)
+            binding.radioTipo.setText(tipo)
 
             binding.btnEditar.setOnClickListener {
                 val descricao = binding.editDescricao.text.toString().trim()
                 val categoria = binding.editCategoria.text.toString().trim()
                 val valor = binding.editValor.text.toString().trim()
-                //val data = binding.editData.text.toString()
+                val tipo = binding.radioTipo.text.toString().trim()
 
                 try {
                     val dataString = converterDataParaFormatoNumerico(binding.editData.text.toString())
@@ -62,8 +65,6 @@ class EditarTransacoesActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     exibirMensagem("Ocorreu um erro ao converter a data")
                 }
-
-                //editarTransacao(id, descricao, categoria, valor, tipo, data)
             }
         }
 
@@ -90,7 +91,7 @@ class EditarTransacoesActivity : AppCompatActivity() {
 
     }
 
-    private fun editarTransacao(id: String, descricao: String, categoria: String, valor: String, tipo: String?, data: Data) {
+    private fun editarTransacao(id: String, descricao: String, categoria: String, valor: String, tipo: String, data: Data) {
         val idUsuarioLogado = autenticacao.currentUser?.uid
         if(idUsuarioLogado != null) {
             val dados = mapOf(
@@ -115,35 +116,6 @@ class EditarTransacoesActivity : AppCompatActivity() {
                 }
         }
     }
-
-    fun converterDataParaFormatoNumerico(data: String): String {
-        val meses = listOf(
-            "jan", "fev", "mar", "abr", "mai", "jun",
-            "jul", "ago", "set", "out", "nov", "dez"
-        )
-
-        val partes = data.split(" ")
-        val dia = partes[1].removeSuffix(".")
-        val mes = (
-                meses.indexOf( // retorna o indice da primeria ocorrencia
-                    partes[2]
-                        .lowercase(Locale.ROOT)
-                        .removeSuffix(".")) + 1
-                ).toString()
-            .padStart(2, '0') //  garante que essa string tenha pelo menos 2 caracteres, preenchendo com 0 à esquerda se necessário
-        val ano = partes[3]
-
-        return "$dia $mes $ano"
-    }
-    private fun converterStingParaData(data: String): Data {
-        val partes = data.split(" ")
-        val dia = partes[0].toInt()
-        val mes = partes[1].toInt()
-        val ano = partes[2].toInt()
-
-        return Data(dia, mes, ano)
-    }
-
 
     private fun exibirMensagem(texto: String) {
         Toast.makeText(this, texto, Toast.LENGTH_LONG).show()
