@@ -57,7 +57,7 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
         binding.btnAdicionarTransacao.setOnClickListener {
             val descricao = binding.editAddDescricao.text.toString().trim()
             val categoria = binding.spinnerCategoria.selectedItem.toString()
-            val valor = binding.editAddValor.text.toString().trim()
+            val valor = formatarValor(binding.editAddValor.text.toString().trim())
             val checkedId = binding.radioTipo.checkedRadioButtonId
 
             if (checkedId == -1) {
@@ -81,6 +81,15 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun formatarValor(valor: String): String {
+        // Converte a string para Double
+        val valorNumerico = valor.toDoubleOrNull() ?: 0.0
+
+        // Formata o Double para ter sempre duas casas decimais
+        return String.format(Locale.US, "%.2f", valorNumerico)
+    }
+
 
     private fun setupDatePicker() {
         val calendario = Calendar.getInstance()

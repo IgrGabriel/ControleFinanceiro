@@ -12,6 +12,7 @@ import com.igorgabriel.recyclerviewtransacoes.model.converterDataParaFormatoNume
 import com.igorgabriel.recyclerviewtransacoes.model.converterStingParaData
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class EditarTransacoesActivity : AppCompatActivity() {
 
@@ -93,11 +94,14 @@ class EditarTransacoesActivity : AppCompatActivity() {
 
     private fun editarTransacao(id: String, descricao: String, categoria: String, valor: String, tipo: String, data: Data) {
         val idUsuarioLogado = autenticacao.currentUser?.uid
+
+        val valorFormatado = formatarValor(valor)
+
         if(idUsuarioLogado != null) {
             val dados = mapOf(
                 "descricao" to descricao,
                 "categoria" to categoria,
-                "valor" to valor,
+                "valor" to valorFormatado,
                 "tipo" to tipo,
                 "data" to data
             )
@@ -115,6 +119,14 @@ class EditarTransacoesActivity : AppCompatActivity() {
                     exibirMensagem("Falha ao atualizar transacao")
                 }
         }
+    }
+
+    private fun formatarValor(valor: String): String {
+        // Converte a string para Double
+        val valorNumerico = valor.toDoubleOrNull() ?: 0.0
+
+        // Formata o Double para ter sempre duas casas decimais
+        return String.format(Locale.US, "%.2f", valorNumerico)
     }
 
     private fun exibirMensagem(texto: String) {
