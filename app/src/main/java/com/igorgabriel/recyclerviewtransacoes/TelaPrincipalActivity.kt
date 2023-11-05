@@ -29,37 +29,20 @@ class TelaPrincipalActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        CoroutineScope(Dispatchers.IO).launch {
-
-            getSaldo()
-
-            val receitas = async { filtrarReceitas() }
-            val despesas = async { filtrarDespesas() }
-
-            val resultadoReceitas = receitas.await()
-            val resultadoDespesas = despesas.await()
-
-            val balanco = resultadoReceitas - resultadoDespesas
-
-            withContext(Dispatchers.Main) {
-                binding.textBalanco.text = balanco.toString()
-            }
-        }
-
+        getSaldo()
+        filtrarReceitas()
+        filtrarDespesas()
+        calcularBalanco()
     }
-
-    private suspend fun getSaldo() {
+    private fun getSaldo() {
         val idUsuarioLogado = autenticacao.currentUser?.uid
-        if(idUsuarioLogado != null) {
-            val refUserSaldo = bancoDados
-                .collection("usuarios/${idUsuarioLogado}")
+        if (idUsuarioLogado != null) {
+            val refUserSaldo = bancoDados.collection("usuarios").document(idUsuarioLogado)
 
-            refUserSaldo.addSnapshotListener { querySnapshot, error ->
-                val listaDocuments = querySnapshot?.documents
-
-                listaDocuments?.forEach{documentSnapshot ->
-                    val dados = documentSnapshot?.data
-                    if(dados != null){
+            refUserSaldo.addSnapshotListener { documentSnapshot, error ->
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val dados = documentSnapshot.data
+                    if (dados != null) {
                         val saldo = dados["saldo"].toString()
                         binding.textSaldo.text = saldo
                     }
@@ -68,24 +51,21 @@ class TelaPrincipalActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun filtrarReceitas(): Double {
-        val idUsuarioLogado = autenticacao.currentUser?.uid
-        var valorReceita = 0.0
 
+    private fun filtrarReceitas() {
+        val idUsuarioLogado = autenticacao.currentUser?.uid
         if (idUsuarioLogado != null) {
-            val refUserReceita = bancoDados
-                .collection("usuarios/${idUsuarioLogado}/transacoes")
+            val refUserReceita = bancoDados.collection("usuarios/${idUsuarioLogado}/transacoes")
                 .whereEqualTo("tipo", "Receita")
 
             refUserReceita.addSnapshotListener { querySnapshot, error ->
+                var valorReceita = 0.0
                 val listaDocuments = querySnapshot?.documents
-                //var listaResultado = 0.0
 
                 listaDocuments?.forEach { documentSnapshot ->
-                    val dados = documentSnapshot?.data
+                    val dados = documentSnapshot.data
                     if (dados != null) {
                         val valor = dados["valor"].toString()
-
                         valorReceita += valor.toDouble()
                     }
                 }
@@ -93,30 +73,23 @@ class TelaPrincipalActivity : AppCompatActivity() {
                 binding.textBlReceita.text = valorReceita.toString()
             }
         }
-
-        return valorReceita
     }
 
-    private suspend fun filtrarDespesas(): Double {
+    private fun filtrarDespesas() {
         val idUsuarioLogado = autenticacao.currentUser?.uid
-        var valorDespesa = 0.0
 
         if (idUsuarioLogado != null) {
-
-            // Filtra as despesas
-            val refUserDespesa = bancoDados
-                .collection("usuarios/${idUsuarioLogado}/transacoes")
+            val refUserDespesa = bancoDados.collection("usuarios/${idUsuarioLogado}/transacoes")
                 .whereEqualTo("tipo", "Despesa")
 
             refUserDespesa.addSnapshotListener { querySnapshot, error ->
+                var valorDespesa = 0.0
                 val listaDocuments = querySnapshot?.documents
-                //var listaResultado = 0.0
 
                 listaDocuments?.forEach { documentSnapshot ->
-                    val dados = documentSnapshot?.data
+                    val dados = documentSnapshot.data
                     if (dados != null) {
                         val valor = dados["valor"].toString()
-
                         valorDespesa += valor.toDouble()
                     }
                 }
@@ -124,22 +97,13 @@ class TelaPrincipalActivity : AppCompatActivity() {
                 binding.textBlDespesa.text = valorDespesa.toString()
             }
         }
-
-        return valorDespesa
     }
 
-
-    /* private suspend fun calcularBalaco() {
-
-         *//*val receitas = binding.textBlReceita.text.toString()
-        val despesas = binding.textBlDespesa.text.toString()
-        val balanco = receitas.toDouble()-despesas.toDouble()*//*
-
-        val receitas = filtrarReceitas()
-        val despesas = filtrarDespesas()
-        val balanco = receitas-despesas
+    private fun calcularBalanco() {
+        val receitas = binding.textBlReceita.text.toString().toDoubleOrNull() ?: 0.0
+        val despesas = binding.textBlDespesa.text.toString().toDoubleOrNull() ?: 0.0
+        val balanco = receitas - despesas
 
         binding.textBalanco.text = balanco.toString()
-
-    }*/
+    }
 }
