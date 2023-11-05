@@ -2,12 +2,16 @@ package com.igorgabriel.recyclerviewtransacoes
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.igorgabriel.recyclerviewtransacoes.databinding.ActivityAdicionarTransacaoBinding
+import com.igorgabriel.recyclerviewtransacoes.model.Data
+import com.igorgabriel.recyclerviewtransacoes.model.converterDataParaFormatoNumerico
+import com.igorgabriel.recyclerviewtransacoes.model.converterStingParaData
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -30,27 +34,44 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        spinnerExibicao()
         setupDatePicker()
         setupAddTransacao()
+    }
+
+
+    private fun spinnerExibicao() {
+
+        val listCategoria = listOf(
+            "Selecione uma categoria", "Alimentação", "Saúde", "Escola", "Compras", "Moradia", "Lazer", "Roupas", "Transporte", "Salário"
+        )
+
+        binding.spinnerCategoria.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            listCategoria
+        )
     }
 
     private fun setupAddTransacao() {
         binding.btnAdicionarTransacao.setOnClickListener {
             val descricao = binding.editAddDescricao.text.toString().trim()
-            val categoria = binding.editAddCategoria.text.toString().trim()
+            val categoria = binding.spinnerCategoria.selectedItem.toString()
             val valor = binding.editAddValor.text.toString().trim()
             val checkedId = binding.radioTipo.checkedRadioButtonId
+
             if (checkedId == -1) {
                 exibirMensagem("Selecione um tipo")
                 return@setOnClickListener
             }
+
             val tipo = findViewById<RadioButton>(checkedId).text.toString()
 
             try {
                 val dataString = converterDataParaFormatoNumerico(binding.textData.text.toString())
                 val data = converterStingParaData(dataString)
 
-                if (descricao.isNotEmpty() && categoria.isNotEmpty() && valor.isNotEmpty()) {
+                if (descricao.isNotEmpty() && !categoria.equals("Selecione uma categoria") && valor.isNotEmpty()) {
                     adicionarTransacao(descricao, categoria, valor, tipo, data)
                 } else {
                     exibirMensagem("Preencha todos os campos")
@@ -62,8 +83,11 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
     }
 
     private fun setupDatePicker() {
+        val calendario = Calendar.getInstance()
+
+        updateTextViewData(calendario)  // Atualiza a UI com a data atual
+
         binding.ivMostrarCalendario.setOnClickListener {
-            val calendario = Calendar.getInstance()
             val ano = calendario.get(Calendar.YEAR)
             val mes = calendario.get(Calendar.MONTH)
             val dia = calendario.get(Calendar.DAY_OF_MONTH)
@@ -74,9 +98,7 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
                     val dataSelecionada = Calendar.getInstance()
                     dataSelecionada.set(anoSelecionado, mesSelecionado, diaSelecionado)
 
-                    val formattedDate = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(dataSelecionada.time)
-
-                    binding.textData.text = formattedDate
+                    updateTextViewData(dataSelecionada)
                 },
                 ano,
                 mes,
@@ -86,35 +108,11 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
         }
     }
 
-    private fun converterStingParaData(data: String): Data {
-        val partes = data.split(" ")
-        val dia = partes[0].toInt()
-        val mes = partes[1].toInt()
-        val ano = partes[2].toInt()
-
-        return Data(dia, mes, ano)
+    private fun updateTextViewData(calendar: Calendar) {
+        // Formata a data e atualiza o texto no TextView
+        val dataFormatada = SimpleDateFormat("EEE, dd MMM yyyy", Locale("pt", "BR")).format(calendar.time)
+        binding.textData.text = dataFormatada
     }
-
-    fun converterDataParaFormatoNumerico(data: String): String {
-        val meses = listOf(
-            "jan", "fev", "mar", "abr", "mai", "jun",
-            "jul", "ago", "set", "out", "nov", "dez"
-        )
-
-        val partes = data.split(" ")
-        val dia = partes[1].removeSuffix(".")
-        val mes = (
-                meses.indexOf( // retorna o indice da primeria ocorrencia
-                    partes[2]
-                        .lowercase(Locale.ROOT)
-                        .removeSuffix(".")) + 1
-                ).toString()
-                .padStart(2, '0') //  garante que essa string tenha pelo menos 2 caracteres, preenchendo com 0 à esquerda se necessário
-        val ano = partes[3]
-
-        return "$dia $mes $ano"
-    }
-
 
     private fun adicionarTransacao(
         descricao: String,
