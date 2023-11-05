@@ -2,6 +2,10 @@ package com.igorgabriel.recyclerviewtransacoes
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.igorgabriel.recyclerviewtransacoes.databinding.ActivityHistoricoTransacoesBinding
 import com.igorgabriel.recyclerviewtransacoes.model.Transacao
 import java.text.SimpleDateFormat
@@ -36,7 +41,7 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        listarTransacoes()
+        setupSpinerFiltros()
         setupUI()
         setupListeners()
         excluirTransacao()
@@ -75,17 +80,44 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
         binding.btnPrincipal.setOnClickListener {
             startActivity(Intent(this, TelaPrincipalActivity::class.java))
         }
+    }
 
-        binding.btnFiltrarDespesas.setOnClickListener {
-            filtrarPorTipo("Despesa")
-        }
+    private fun setupSpinerFiltros() {
 
-        binding.btnFiltrarReceitas.setOnClickListener {
-            filtrarPorTipo("Receita")
-        }
+        val listFiltros = listOf(
+            "Todas as transações", "Feitas esse mês", "Despesas", "Receitas"
+        )
 
-        binding.btnFiltrarData.setOnClickListener {
-            filtrarMesAtual()
+        binding.spinnerFiltros.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            listFiltros
+        )
+
+        binding.spinnerFiltros.onItemSelectedListener = object: OnItemSelectedListener{
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val itemSelecionado = parent?.selectedItem.toString()
+
+                if(itemSelecionado.equals("Todas as transações")) {
+                    listarTransacoes()
+                }else if(itemSelecionado.equals("Receitas")){
+                    filtrarPorTipo("Receita")
+                } else if(itemSelecionado.equals("Despesas")){
+                    filtrarPorTipo("Despesa")
+                } else if(itemSelecionado.equals("Feitas esse mês")) {
+                    filtrarMesAtual()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                listarTransacoes()
+            }
+
         }
     }
 
@@ -135,13 +167,10 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
         if (idUsuarioLogado != null) {
             val referenciaUsuario = bancoDados
                 .collection("usuarios/${idUsuarioLogado}/transacoes")
-            // Ordena por data mais recente
-            /*.orderBy("data.dia", Query.Direction.DESCENDING)
-            .orderBy("data.mes", Query.Direction.DESCENDING)
-            .orderBy("data.ano", Query.Direction.DESCENDING)*/
-
-            //.whereEqualTo("data.mes", 10)
-            //.whereEqualTo("data.ano", 2023)
+                // Ordena por data mais recente
+                /*.orderBy("data.ano", Query.Direction.ASCENDING)
+                .orderBy("data.mes", Query.Direction.ASCENDING)
+                .orderBy("data.dia", Query.Direction.ASCENDING)*/
 
             referenciaUsuario.addSnapshotListener { querySnapshot, error ->
                 val listaDocuments = querySnapshot?.documents
@@ -204,6 +233,7 @@ class HistoricoTransacoesActivity : AppCompatActivity() {
                 .collection("usuarios/${idUsuarioLogado}/transacoes")
                 .whereEqualTo("data.mes", mes)
                 .whereEqualTo("data.ano", ano)
+                .orderBy("data.dia", Query.Direction.DESCENDING)
 
             referenciaUsuario.addSnapshotListener { querySnapshot, error ->
                 val listaDocuments = querySnapshot?.documents
