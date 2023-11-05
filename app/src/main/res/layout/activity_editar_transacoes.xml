@@ -117,9 +117,31 @@
 
             </LinearLayout>
 
+            <!--Tipo da transação-->
             <View
                 android:layout_width="wrap_content"
-                android:layout_height="80dp" />
+                android:layout_height="20dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.7"
+                android:text="Tipo da transação:"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radio_tipo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:checked="true"
+                android:alpha="0.7"
+                android:textSize="16dp"/>
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="60dp" />
 
             <!-- Botao editar-->
             <RelativeLayout
