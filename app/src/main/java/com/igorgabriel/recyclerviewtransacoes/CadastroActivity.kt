@@ -59,7 +59,8 @@ class CadastroActivity : AppCompatActivity() {
 
             val dados = mapOf(
                 "nome" to nome,
-                "sobrenome" to sobrenome
+                "sobrenome" to sobrenome,
+                "saldo" to 0.0
             )
 
             bancoDados
