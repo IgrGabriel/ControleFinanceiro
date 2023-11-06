@@ -43,7 +43,8 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
     private fun spinnerExibicao() {
 
         val listCategoria = listOf(
-            "Selecione uma categoria", "Alimentação", "Saúde", "Escola", "Compras", "Moradia", "Lazer", "Roupas", "Transporte", "Salário"
+            "Selecione uma categoria", "Alimentação", "Saúde", "Educação", "Compras", "Moradia", "Lazer", "Roupas", "Transporte", "Salário",
+            "Investimentos", "Presentes", "Salário", "Outros"
         )
 
         binding.spinnerCategoria.adapter = ArrayAdapter(
