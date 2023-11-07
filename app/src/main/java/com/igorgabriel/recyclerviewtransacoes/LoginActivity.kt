@@ -40,7 +40,7 @@ class LoginActivity : AppCompatActivity() {
 
         if(usuario != null){
             exibirMensagem("Bem-vindo!")
-            startActivity(Intent(this, HistoricoTransacoesActivity::class.java))
+            startActivity(Intent(this, TelaPrincipalActivity::class.java))
         }
     }
 
@@ -53,7 +53,7 @@ class LoginActivity : AppCompatActivity() {
             autenticacao.signInWithEmailAndPassword(
                 email, senha
             ).addOnSuccessListener { authResult ->
-                startActivity(Intent(this, HistoricoTransacoesActivity::class.java))
+                startActivity(Intent(this, TelaPrincipalActivity::class.java))
             }.addOnFailureListener { exception ->
                 val msgErro = exception.message
                 binding.textResultado.text = "Não foi possível fazer login: $msgErro"
