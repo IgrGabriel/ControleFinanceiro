@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RecyclerViewTransacoes"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC7XDAS7Bdy1KZkq3aNM_M3y_UXgo18pZs" />
+
         <activity
             android:name=".TelaPrincipalActivity"
             android:exported="false" />
