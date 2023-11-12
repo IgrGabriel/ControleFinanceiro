@@ -31,7 +31,7 @@ class TelaPrincipalActivity : AppCompatActivity() {
                 R.id.item_home -> replaceFragment(HomeFragment())
                 R.id.item_transactions -> replaceFragment(TransactionsFragment())
                 //R.id.item_map -> replaceFragment(MapsFragment())
-                R.id.item_map -> replaceFragment(ProfileFragment())
+                R.id.item_profile -> replaceFragment(ProfileFragment())
                 R.id.item_logout -> confirmLogout()
                 else -> {
                     replaceFragment(HomeFragment())
