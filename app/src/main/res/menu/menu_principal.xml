@@ -10,9 +10,9 @@
         android:title="Transactions"/>
 
     <item
-    android:id="@+id/item_map"
-    android:icon="@drawable/baseline_map_24"
-    android:title="Map"/>
+        android:id="@+id/item_profile"
+        android:icon="@drawable/baseline_person_24"
+        android:title="Profile" />
 
     <item
         android:id="@+id/item_logout"
