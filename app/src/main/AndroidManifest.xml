@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RecyclerViewTransacoes"
         tools:targetApi="31">
+        <activity
+            android:name=".AdicionarCategoriaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdicionarReceitaActivity"
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -21,7 +27,7 @@
             android:name=".TelaPrincipalActivity"
             android:exported="false" />
         <activity
-            android:name=".AdicionarTransacaoActivity"
+            android:name=".AdicionarDespesaActivity"
             android:exported="false" />
         <activity
             android:name=".CadastroActivity"
