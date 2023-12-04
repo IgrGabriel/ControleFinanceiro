@@ -7,6 +7,30 @@
     android:orientation="vertical"
     tools:context=".TelaPrincipalActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:background="@color/my_primary"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="20dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/chart_icon" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:text="Controle Financeiro"
+            android:textColor="@color/white"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,19 +49,19 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Saldo Total:"
-                android:textStyle="bold"
                 android:alpha="0.7"
-                android:textSize="16dp"/>
+                android:text="Saldo Total:"
+                android:textSize="16dp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/text_saldo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="35dp"
-                android:textColor="#3F51B5"
+                android:alpha="0.7"
                 android:text="0.00"
-                android:alpha="0.7"/>
+                android:textColor="#3F51B5"
+                android:textSize="35dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -46,31 +70,67 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginVertical="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         app:cardCornerRadius="8dp"
         app:contentPadding="10dp">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gastos de hoje:"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:alpha="0.7"/>
-
-            <TextView
-                android:id="@+id/text_gastos_hoje"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:textColor="#F44336"
+                android:layout_marginBottom="15dp"
+                android:alpha="0.7"
+                android:text="Transações feitas hoje:"
                 android:textSize="16dp"
-                android:text="0.00" />
-        </RelativeLayout>
+                android:textStyle="bold" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Receitas de hoje:"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/text_receitas_hoje"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:text="0.00"
+                    android:textColor="#009688"
+                    android:textSize="16dp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gastos de hoje:"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/text_gastos_hoje"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:text="0.00"
+                    android:textColor="#F44336"
+                    android:textSize="16dp" />
+            </RelativeLayout>
+
+        </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 
@@ -91,11 +151,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Balanço mensal:"
-                android:textStyle="bold"
-                android:textSize="16dp"
                 android:layout_marginBottom="15dp"
-                android:alpha="0.7" />
+                android:alpha="0.7"
+                android:text="Balanço mensal:"
+                android:textSize="16dp"
+                android:textStyle="bold" />
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -105,17 +165,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16dp"
-                    android:text="Receita:" />
+                    android:text="Receita:"
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/text_bl_receita"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:text="0.00"
                     android:textColor="#009688"
-                    android:textSize="16dp"
-                    android:text="0.00" />
+                    android:textSize="16dp" />
 
             </RelativeLayout>
 
@@ -127,17 +187,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16dp"
-                    android:text="Despesa:" />
+                    android:text="Despesa:"
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/text_bl_despesa"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:text="0.00"
                     android:textColor="#F44336"
-                    android:textSize="16dp"
-                    android:text="0.00" />
+                    android:textSize="16dp" />
 
             </RelativeLayout>
 
@@ -145,7 +205,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
+                android:background="@android:color/darker_gray" />
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -155,17 +215,17 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16dp"
-                    android:text="Balanço:" />
+                    android:text="Balanço:"
+                    android:textSize="16dp" />
 
                 <TextView
                     android:id="@+id/text_balanco"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:text="0.00"
                     android:textColor="#3F51B5"
-                    android:textSize="16dp"
-                    android:text="0.00" />
+                    android:textSize="16dp" />
 
             </RelativeLayout>
 
