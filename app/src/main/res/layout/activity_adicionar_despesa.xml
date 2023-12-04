@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AdicionarTransacaoActivity">
+    tools:context=".AdicionarDespesaActivity">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Nova Transação"
+                android:text="Adicionar nova despesa"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -136,23 +136,14 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <RadioGroup
+            <RadioButton
                 android:id="@+id/radio_tipo"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <RadioButton
-                    android:id="@+id/radio_receita"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Receita" />
-
-                <RadioButton
-                    android:id="@+id/radio_despesa"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Despesa" />
-            </RadioGroup>
+                android:layout_height="wrap_content"
+                android:text="Despesa"
+                android:checked="true"
+                android:alpha="0.7"
+                android:textSize="16dp"/>
 
             <View
                 android:layout_width="wrap_content"

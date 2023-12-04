@@ -1,14 +1,18 @@
 package com.igorgabriel.recyclerviewtransacoes
 
+import android.R
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.igorgabriel.recyclerviewtransacoes.databinding.ActivityAdicionarTransacaoBinding
+import com.igorgabriel.recyclerviewtransacoes.databinding.ActivityAdicionarDespesaBinding
 import com.igorgabriel.recyclerviewtransacoes.model.Data
 import com.igorgabriel.recyclerviewtransacoes.model.converterDataParaFormatoNumerico
 import com.igorgabriel.recyclerviewtransacoes.model.converterStingParaData
@@ -16,10 +20,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class AdicionarTransacaoActivity : AppCompatActivity() {
+class AdicionarDespesaActivity : AppCompatActivity() {
 
     private val binding by lazy {
-        ActivityAdicionarTransacaoBinding.inflate(layoutInflater)
+        ActivityAdicionarDespesaBinding.inflate(layoutInflater)
     }
 
     private val autenticacao by lazy {
@@ -39,19 +43,76 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
         setupAddTransacao()
     }
 
-
     private fun spinnerExibicao() {
+        val idUsuarioLogado = autenticacao.currentUser?.uid
 
-        val listCategoria = listOf(
-            "Selecione uma categoria", "Alimentação", "Saúde", "Educação", "Compras", "Moradia", "Lazer", "Roupas", "Transporte", "Salário",
-            "Investimentos", "Presentes", "Salário", "Outros"
-        )
+        if (idUsuarioLogado != null) {
+            val listCategoria = mutableListOf<String>()
 
-        binding.spinnerCategoria.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            listCategoria
-        )
+            listCategoria.add("Selecione uma categoria")
+
+            val adapter = ArrayAdapter(
+                this,
+                R.layout.simple_spinner_dropdown_item,
+                listCategoria
+            )
+
+            binding.spinnerCategoria.adapter = adapter
+
+            bancoDados
+                .collection("usuarios/${idUsuarioLogado}/categorias")
+                .addSnapshotListener { value, error ->
+                    if (error != null){
+                        Log.e("Firebase", "Erro ao escutar alterações: $error")
+                        return@addSnapshotListener
+                    }
+
+                    listCategoria.clear()
+                    listCategoria.add("Selecione uma categoria")
+
+                    for (document in value!!) {
+                        val nome = document.getString("nome")
+                        val tipo = document.getString("tipo")
+
+                        if (tipo.equals("Despesa")) {
+                            listCategoria.add(nome.toString())
+                        }
+                    }
+
+                    listCategoria.add("+ Adicionar nova categoria")
+
+                    adapter.notifyDataSetChanged()
+
+                    binding.spinnerCategoria.onItemSelectedListener =
+                        object : AdapterView.OnItemSelectedListener {
+                            override fun onItemSelected(
+                                parent: AdapterView<*>?,
+                                view: View?,
+                                position: Int,
+                                id: Long
+                            ) {
+                                val selectedItem = listCategoria[position]
+
+                                if (selectedItem == "+ Adicionar nova categoria") {
+                                    // Inicie a nova atividade para adicionar uma nova categoria
+                                    val intent = Intent(
+                                        this@AdicionarDespesaActivity,
+                                        AdicionarCategoriaActivity::class.java
+                                    )
+                                    intent.putExtra("tipo", "Despesa")
+                                    startActivity(intent)
+
+                                    // Reverte a seleção do Spinner para o item anterior
+                                    binding.spinnerCategoria.setSelection(0)
+                                }
+                            }
+
+                            override fun onNothingSelected(parent: AdapterView<*>?) {
+                                //nenhum item selecionado
+                            }
+                        }
+                }
+        }
     }
 
     private fun setupAddTransacao() {
@@ -59,14 +120,7 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
             val descricao = binding.editAddDescricao.text.toString().trim()
             val categoria = binding.spinnerCategoria.selectedItem.toString()
             val valor = formatarValor(binding.editAddValor.text.toString().trim())
-            val checkedId = binding.radioTipo.checkedRadioButtonId
-
-            if (checkedId == -1) {
-                exibirMensagem("Selecione um tipo")
-                return@setOnClickListener
-            }
-
-            val tipo = findViewById<RadioButton>(checkedId).text.toString()
+            val tipo = binding.radioTipo.text.toString().trim()
 
             try {
                 val dataString = converterDataParaFormatoNumerico(binding.textData.text.toString())
@@ -84,11 +138,8 @@ class AdicionarTransacaoActivity : AppCompatActivity() {
     }
 
     private fun formatarValor(valor: String): String {
-        // Converte a string para Double
-        val valorNumerico = valor.toDoubleOrNull() ?: 0.0
-
         // Formata o Double para ter sempre duas casas decimais
-        return String.format(Locale.US, "%.2f", valorNumerico)
+        return String.format(Locale.US, "%.2f", valor.toDoubleOrNull() ?: 0.0)
     }
 
 
