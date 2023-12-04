@@ -15,7 +15,6 @@ import java.util.Locale
 
 class HomeFragment : Fragment() {
 
-
     private val autenticacao by lazy {
         FirebaseAuth.getInstance()
     }
@@ -30,28 +29,12 @@ class HomeFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        getSaldo()
+        calcularSaldo()
         calcularDespesasDoDia()
+        calcularReceitasDoDia()
         calcularBalanco()
 
         return view
-    }
-
-    private fun getSaldo() {
-        val idUsuarioLogado = autenticacao.currentUser?.uid
-        if (idUsuarioLogado != null) {
-            val refUserSaldo = bancoDados.collection("usuarios").document(idUsuarioLogado)
-
-            refUserSaldo.addSnapshotListener { documentSnapshot, error ->
-                if (documentSnapshot != null && documentSnapshot.exists()) {
-                    val dados = documentSnapshot.data
-                    if (dados != null) {
-                        val saldo = dados["saldo"].toString()
-                        view?.findViewById<TextView>(R.id.text_saldo)?.text = formatarValor(saldo)
-                    }
-                }
-            }
-        }
     }
 
     private fun calcularDespesasDoDia() {
@@ -60,14 +43,10 @@ class HomeFragment : Fragment() {
 
         if (idUsuarioLogado != null) {
 
-            val calendario = Calendar.getInstance()
-            val mes = calendario.get(Calendar.MONTH) + 1
-            val dia = calendario.get(Calendar.DAY_OF_MONTH)
-
             val refUserReceita = bancoDados.collection("usuarios/${idUsuarioLogado}/transacoes")
                 .whereEqualTo("tipo", "Despesa")
-                .whereEqualTo("data.dia", dia)
-                .whereEqualTo("data.mes", mes)
+                .whereEqualTo("data.dia", Calendar.getInstance().get(Calendar.DAY_OF_MONTH))
+                .whereEqualTo("data.mes", Calendar.getInstance().get(Calendar.MONTH) + 1)
 
             refUserReceita.addSnapshotListener { querySnapshot, error ->
                 val listaDocuments = querySnapshot?.documents
@@ -85,15 +64,47 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun filtrarValorTotalTransacao(tipo: String, callback: (String) -> Unit) {
+    private fun calcularReceitasDoDia() {
         val idUsuarioLogado = autenticacao.currentUser?.uid
         var valorTotal = 0.0
 
         if (idUsuarioLogado != null) {
+
             val refUserReceita = bancoDados.collection("usuarios/${idUsuarioLogado}/transacoes")
-                .whereEqualTo("tipo", tipo)
+                .whereEqualTo("tipo", "Receita")
+                .whereEqualTo("data.dia", Calendar.getInstance().get(Calendar.DAY_OF_MONTH))
+                .whereEqualTo("data.mes", Calendar.getInstance().get(Calendar.MONTH) + 1)
 
             refUserReceita.addSnapshotListener { querySnapshot, error ->
+                val listaDocuments = querySnapshot?.documents
+
+                listaDocuments?.forEach { documentSnapshot ->
+                    val dados = documentSnapshot.data
+                    if (dados != null) {
+                        val valor = dados["valor"].toString()
+                        valorTotal += valor.toDouble()
+                    }
+                }
+                view?.findViewById<TextView>(R.id.text_receitas_hoje)?.text = formatarValor(valorTotal.toString())
+            }
+        }
+    }
+
+    private fun filtrarValorTotalTransacao(tipo: String, filtro: Boolean, callback: (String) -> Unit) {
+        val idUsuarioLogado = autenticacao.currentUser?.uid
+        var valorTotal = 0.0
+
+        if (idUsuarioLogado != null) {
+            val refUserTransacao = bancoDados.collection("usuarios/${idUsuarioLogado}/transacoes")
+
+            val query = if (filtro) {
+                refUserTransacao.whereEqualTo("tipo", tipo)
+                    .whereEqualTo("data.mes", Calendar.getInstance().get(Calendar.MONTH) + 1)
+            } else {
+                refUserTransacao.whereEqualTo("tipo", tipo)
+            }
+
+            query.addSnapshotListener { querySnapshot, error ->
                 val listaDocuments = querySnapshot?.documents
 
                 listaDocuments?.forEach { documentSnapshot ->
@@ -111,32 +122,51 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun calcularSaldo() {
+        var receitas = 0.0
+        var despesas = 0.0
+
+        filtrarValorTotalTransacao("Receita", false) { valorTotal ->
+            receitas = valorTotal.toDouble()
+            atualizarSaldo(receitas, despesas)
+        }
+
+        filtrarValorTotalTransacao("Despesa", false) { valorTotal ->
+            despesas = valorTotal.toDouble()
+            atualizarSaldo(receitas, despesas)
+        }
+    }
+
     private fun calcularBalanco() {
         var receitas = 0.0
         var despesas = 0.0
 
-        filtrarValorTotalTransacao("Receita") { valorTotal ->
+        filtrarValorTotalTransacao("Receita", true) { valorTotal ->
             receitas = valorTotal.toDouble()
             view?.findViewById<TextView>(R.id.text_bl_receita)?.text = formatarValor(valorTotal)
             atualizarBalanco(receitas, despesas)
         }
 
-        filtrarValorTotalTransacao("Despesa") { valorTotal ->
+        filtrarValorTotalTransacao("Despesa", true) { valorTotal ->
             despesas = valorTotal.toDouble()
             view?.findViewById<TextView>(R.id.text_bl_despesa)?.text = formatarValor(valorTotal)
             atualizarBalanco(receitas, despesas)
         }
     }
 
+    private fun atualizarSaldo(receitas: Double, despesas: Double){
+        val saldo = receitas - despesas
+        view?.findViewById<TextView>(R.id.text_saldo)?.text = formatarValor(saldo.toString())
+    }
+
     private fun atualizarBalanco(receitas: Double, despesas: Double) {
         val balanco = receitas - despesas
         view?.findViewById<TextView>(R.id.text_balanco)?.text = formatarValor(balanco.toString())
     }
-    private fun formatarValor(valor: String): String {
-        // Converte a string para Double
-        val valorNumerico = valor.toDoubleOrNull() ?: 0.0
 
+    private fun formatarValor(valor: String): String {
         // Formata o Double para ter sempre duas casas decimais
-        return String.format(Locale.US, "%.2f", valorNumerico)
+        return String.format(Locale.US, "%.2f", valor.toDoubleOrNull() ?: 0.0)
     }
+
 }
