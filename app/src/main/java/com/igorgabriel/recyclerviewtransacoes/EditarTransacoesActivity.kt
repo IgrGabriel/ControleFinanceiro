@@ -122,11 +122,8 @@ class EditarTransacoesActivity : AppCompatActivity() {
     }
 
     private fun formatarValor(valor: String): String {
-        // Converte a string para Double
-        val valorNumerico = valor.toDoubleOrNull() ?: 0.0
-
         // Formata o Double para ter sempre duas casas decimais
-        return String.format(Locale.US, "%.2f", valorNumerico)
+        return String.format(Locale.US, "%.2f", valor.toDoubleOrNull() ?: 0.0)
     }
 
     private fun exibirMensagem(texto: String) {
