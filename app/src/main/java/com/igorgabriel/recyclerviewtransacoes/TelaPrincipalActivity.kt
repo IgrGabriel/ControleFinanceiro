@@ -1,6 +1,6 @@
 package com.igorgabriel.recyclerviewtransacoes
 
-//import com.igorgabriel.recyclerviewtransacoes.view.MapsFragment
+import MapsFragment
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
