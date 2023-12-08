@@ -93,6 +93,6 @@ class MapsFragment : Fragment() {
 
     companion object {
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
-        private const val DEFAULT_ZOOM = 15
+        private const val DEFAULT_ZOOM = 13
     }
 }
